@@ -63,7 +63,9 @@ func main() {
 func onReady(client *discordgo.Session, event *discordgo.Ready) {
   logger := util.GetSugaredLogger()
   logger.Info("Bot started and listening.")
-
+  
+  client.UserUpdate("", "", "", util.GetAvatar(), "")
+  
   guilds, err := client.UserGuilds(100, "", "")
 
   if err != nil {
