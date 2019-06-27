@@ -3,16 +3,15 @@ package main
 import (
   "flag"
   "github.com/bwmarrin/discordgo"
-  "go.uber.org/zap"
+  "github.com/finione/Discord-Hack-Week/src/session"
+  "github.com/finione/Discord-Hack-Week/src/util"
   "os"
   "os/signal"
   "strings"
-  "swiss.dev/Discord-Hack-Week/src/session"
   "syscall"
 )
 
 var token string
-var sugar *zap.SugaredLogger
 var sessions []*session.Session
 
 func init() {
@@ -22,20 +21,18 @@ func init() {
 }
 
 func main() {
-  logger, _ := zap.NewDevelopment()
+  logger := util.GetSugaredLogger()
   defer logger.Sync() // flushes buffer, if any
-  sugar = logger.Sugar()
-
 
   if token == "" {
-    sugar.Fatal("No token provided. Please use -t <bot token>")
+    logger.Fatal("No token provided. Please use -t <bot token>")
   }
 
-  sugar.Info("Starting bot.")
+  logger.Info("Starting bot.")
 
   dg, err := discordgo.New("Bot " + token)
   if err != nil {
-    sugar.Fatalf("Error starting bot: %s", err)
+    logger.Fatalf("Error starting bot: %s", err)
 
   }
 
@@ -54,17 +51,18 @@ func main() {
 }
 
 func onReady(session *discordgo.Session, event *discordgo.Ready) {
-  sugar.Info("Bot started and listening.")
+  logger := util.GetSugaredLogger()
+  logger.Info("Bot started and listening.")
 
   guilds, err := session.UserGuilds(100, "", "")
 
   if err != nil {
-    sugar.Fatalf("Error loading guilds: %s", err.Error())
+    logger.Fatalf("Error loading guilds: %s", err.Error())
   }
 
   for _, guild := range guilds {
     if guild.Owner {
-      sugar.Infof("Found existing session on startup: %s", guild.ID)
+      logger.Infof("Found existing session on startup: %s", guild.ID)
       // todo guild is session => load or delete
     }
   }
@@ -72,7 +70,8 @@ func onReady(session *discordgo.Session, event *discordgo.Ready) {
 }
 
 func onMessage(client *discordgo.Session, message *discordgo.MessageCreate) {
-  sugar.Debugf("[%s] %s: %s", message.Timestamp, message.Author.Username, message.Content)
+  logger := util.GetSugaredLogger()
+  logger.Debugf("[%s] %s: %s", message.Timestamp, message.Author.Username, message.Content)
   // todo: message handler
   if strings.HasPrefix(message.Content, "!session create") {
     name := strings.TrimSpace(strings.TrimPrefix(message.Content, "!session create"))
