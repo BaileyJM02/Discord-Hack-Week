@@ -10,6 +10,6 @@ a session extends a guild object, providing all the functionality a basic guild 
 type Session struct {
   Guild *discordgo.Guild
   // the user creating the session
-  Owner *discordgo.User
+  OwnerID string
   Name string
 }

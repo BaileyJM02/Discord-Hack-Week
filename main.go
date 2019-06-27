@@ -10,44 +10,46 @@ import (
   "os/signal"
   "strings"
   "syscall"
+  "go.uber.org/zap"
 )
 
+var logger *zap.SugaredLogger
 var token string
-var options cli.Options
+var options *cli.Options
 var err error
-var sessions []*session.Session
+var sessions map[string]*session.Session
 
 func init() {
   flag.StringVar(&token, "t", "NOTOKEN", "Bot Token")
   flag.Parse()
+  sessions = make(map[string]*session.Session)
+}
 
+func main() {
   // If no flags are given, run CLI
   if token == "NOTOKEN" {
     options, err = cli.Start()
   } else {
-    options = cli.Options{Token: token}
+    options = &cli.Options{Token: token}
   }
-}
-
-func main() {
-  logger := util.GetSugaredLogger()
+  logger = util.GetSugaredLogger()
   defer logger.Sync() // flushes buffer, if any
 
-  // Catches any errors recorded on init and fails.
+  // Catches any errors recorded on cli.Start and fails.
   if err != nil {
       logger.Fatalf(`Unable to start due to multiple errors: %v`, err)
   }
 
   logger.Info("Starting bot.")
 
-  dg, err := discordgo.New("Bot " + token)
+  dg, err := discordgo.New("Bot " + options.Token)
   if err != nil {
     logger.Fatalf("Error starting bot: %s", err)
-
   }
 
   dg.AddHandler(onReady)
   dg.AddHandler(onMessage)
+  dg.AddHandler(onMember)
 
   dg.Open()
 
@@ -55,13 +57,13 @@ func main() {
   sc := make(chan os.Signal, 1)
   signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
   <-sc
-
-  dg.Close()
+  logger.Info("Exiting.")
+  
+  defer dg.Close()
 
 }
 
 func onReady(client *discordgo.Session, event *discordgo.Ready) {
-  logger := util.GetSugaredLogger()
   logger.Info("Bot started and listening.")
   
   client.UserUpdate("", "", "", util.GetAvatar(), "")
@@ -75,31 +77,26 @@ func onReady(client *discordgo.Session, event *discordgo.Ready) {
   for _, guild := range guilds {
     if guild.Owner {
       logger.Infof("Found existing session on startup: %s", guild.ID)
-      // todo guild is session => load or delete
+      // todo guild is session => load or delete, for now delete
+      client.GuildDelete(guild.ID)
     }
   }
 
   // check if CLI has already requested a session
   if options.ServerName != "" {
     logger.Info("Using CLI session info.")
-    var user *discordgo.User
-    user = &discordgo.User{
-      ID: options.UserID,
-      Bot: false,
-    }
     // Not sure if this is a good work-around, but it works....
-    userpointer := *user
-    session, err := session.Create(client, options.ServerName, &userpointer, options)
+    session, err := session.Create(client, options.ServerName, options.UserID, "", options)
     if err != nil {
       // todo: error handling
     }
-    sessions = append(sessions, session)
+
+    sessions[session.Guild.ID] = session
   }
 
 }
 
 func onMessage(client *discordgo.Session, message *discordgo.MessageCreate) {
-  logger := util.GetSugaredLogger()
   logger.Debugf("[%s] %s: %s", message.Timestamp, message.Author.Username, message.Content)
   // todo: message handler
   if strings.HasPrefix(message.Content, "!session create") {
@@ -107,12 +104,34 @@ func onMessage(client *discordgo.Session, message *discordgo.MessageCreate) {
     if "" == name {
       name = "My Custom Guild"
     }
-    session, err := session.Create(client, name, message.Author, options)
+    
+    // Create a session / guild
+    session, err := session.Create(client, name, message.Author.ID, message.ChannelID, options)
 
     if err != nil {
       // todo: error handling
     }
 
-    sessions = append(sessions, session)
+    // Assign session to a map with key of guild so it can be accessed later
+    sessions[session.Guild.ID] = session
+  }
+}
+
+
+func onMember(client *discordgo.Session, member *discordgo.GuildMemberAdd) {
+  // If the user who joins in the one that run the command / ID entered within CLI matches the current Guild Session
+  if member.User.ID == sessions[member.GuildID].OwnerID {
+    // Set the guild owner as user
+    _, err := client.GuildEdit(member.GuildID, discordgo.GuildParams{OwnerID: member.User.ID})
+    if err != nil {
+      logger.Errorf("Error on transfering guild (%v): %v",member.GuildID, err)
+    }
+    // Get the bot to leave the guild
+    err = client.GuildLeave(member.GuildID)
+    if err != nil {
+      logger.Errorf("Error on leaving guild (%v): %v",member.GuildID, err)
+    }
+    // Delete the session
+    sessions[member.GuildID] = nil
   }
 }

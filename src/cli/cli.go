@@ -17,7 +17,7 @@ type Options struct {
 }
 
 // Start function to start CLI
-func Start() (Options, error) {
+func Start() (*Options, error) {
 	// make options map
 	options := make(map[string]string)
 
@@ -58,7 +58,7 @@ func Start() (Options, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return Options{}, err
+		return &Options{}, err
 	}
 
 	// pass the result to the map
@@ -74,7 +74,7 @@ func Start() (Options, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return Options{}, err
+		return &Options{}, err
 	}
 
 	// pass the result to the map
@@ -100,7 +100,7 @@ func Start() (Options, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return Options{}, err
+		return &Options{}, err
 	}
 
 	// pass the result to the map
@@ -116,7 +116,7 @@ func Start() (Options, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return Options{}, err
+		return &Options{}, err
 	}
 
 	// pass the result to the map
@@ -124,7 +124,7 @@ func Start() (Options, error) {
 
 
 	// return map with error nil
-	return Options{
+	return &Options{
 		Token: options["token"],
 		UserID: options["userID"],
 		ServerName: options["serverName"],
