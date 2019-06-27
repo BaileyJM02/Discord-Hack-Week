@@ -5,6 +5,7 @@ import (
   "github.com/bwmarrin/discordgo"
   "github.com/finione/Discord-Hack-Week/src/session"
   "github.com/finione/Discord-Hack-Week/src/util"
+  "github.com/finione/Discord-Hack-Week/src/cli"
   "os"
   "os/signal"
   "strings"
@@ -12,11 +13,19 @@ import (
 )
 
 var token string
+var options map[string]interface{}
+var err error
 var sessions []*session.Session
 
 func init() {
-  flag.StringVar(&token, "t", "", "Bot Token")
+  flag.StringVar(&token, "t", "NOTOKEN", "Bot Token")
   flag.Parse()
+
+  // If no flags are given, run CLI
+  if token == "NOTOKEN" {
+    options, err = cli.Start()
+  }
+
 
 }
 
