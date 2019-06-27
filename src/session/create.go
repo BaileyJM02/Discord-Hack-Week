@@ -10,7 +10,7 @@ import(
 var logger *zap.SugaredLogger
 
 func main() {
-  logger := util.GetSugaredLogger()
+  logger = util.GetSugaredLogger()
 }
 
 // Create guild/session function
