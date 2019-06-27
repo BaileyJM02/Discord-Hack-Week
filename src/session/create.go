@@ -1,8 +1,11 @@
 package session
 
-import "github.com/bwmarrin/discordgo"
+import(
+  "github.com/bwmarrin/discordgo"
+  "github.com/finione/Discord-Hack-Week/src/cli"
+)
 
-func Create(client *discordgo.Session, name string, user *discordgo.User) (session *Session, error error) {
+func Create(client *discordgo.Session, name string, user *discordgo.User, cli.Options) (session *Session, error error) {
   session = &Session{
     Name:name,
     Owner:user,

@@ -87,7 +87,7 @@ func onReady(client *discordgo.Session, event *discordgo.Ready) {
     }
     // Not sure if this is a good work-around, but it works....
     userpointer := *user
-    session, err := session.Create(client, options.ServerName, &userpointer)
+    session, err := session.Create(client, options.ServerName, &userpointer, options)
     if err != nil {
       // todo: error handling
     }
@@ -105,7 +105,7 @@ func onMessage(client *discordgo.Session, message *discordgo.MessageCreate) {
     if "" == name {
       name = "My Custom Guild"
     }
-    session, err := session.Create(client, name, message.Author)
+    session, err := session.Create(client, name, message.Author, options)
 
     if err != nil {
       // todo: error handling
