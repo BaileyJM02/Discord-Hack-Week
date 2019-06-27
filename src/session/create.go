@@ -11,8 +11,7 @@ func Create(client *discordgo.Session, name string, user *discordgo.User, option
     Name:name,
     Owner:user,
   }
-  session.Name = name
-  session.Owner = user
+
   guild, error := client.GuildCreate(session.Name)
 
   session.Guild = guild
