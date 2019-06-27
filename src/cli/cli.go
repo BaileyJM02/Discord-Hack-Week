@@ -11,6 +11,7 @@ import (
 // Options struct for server creation
 type Options struct {
 	Token string
+	UserID string
 	ServerName string
 	ServerType string
 }
@@ -27,6 +28,14 @@ func Start() (Options, error) {
 
 		if valid != true {
 			return errors.New("Invalid token, please use a bot token that can be found at https://discordapp.com/developers/applications/")
+		}
+		return nil
+	}
+
+	validateID := func(input string) error {
+		// Is it 18?
+		if len(input) < 18 {
+			return errors.New("Invalid ID, please enter your user ID")
 		}
 		return nil
 	}
@@ -54,6 +63,22 @@ func Start() (Options, error) {
 
 	// pass the result to the map
 	options["token"] = result
+
+	// define user id prompt
+	prompt = promptui.Prompt{
+		Label:    "User ID",
+		Validate: validateID,
+	}
+
+	result, err = prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return Options{}, err
+	}
+
+	// pass the result to the map
+	options["userID"] = result
 
 	// define server types
 	serverTypes := []string{"Bot & Support", "Support", "Fun", "Project", "Product / Service"}
@@ -101,6 +126,7 @@ func Start() (Options, error) {
 	// return map with error nil
 	return Options{
 		Token: options["token"],
+		UserID: options["userID"],
 		ServerName: options["serverName"],
 		ServerType: options["serverType"],
 	}, nil

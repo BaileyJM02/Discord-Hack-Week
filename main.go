@@ -10,7 +10,6 @@ import (
   "os/signal"
   "strings"
   "syscall"
-  "fmt"
 )
 
 var token string
@@ -36,7 +35,7 @@ func main() {
 
   // Catches any errors recorded on init and fails.
   if err != nil {
-      logger.Fatal(fmt.Sprintf(`Unable to start due to multiple errors: %v`, err))
+      logger.Fatalf(`Unable to start due to multiple errors: %v`, err)
   }
 
   logger.Info("Starting bot.")
@@ -61,11 +60,11 @@ func main() {
 
 }
 
-func onReady(session *discordgo.Session, event *discordgo.Ready) {
+func onReady(client *discordgo.Session, event *discordgo.Ready) {
   logger := util.GetSugaredLogger()
   logger.Info("Bot started and listening.")
 
-  guilds, err := session.UserGuilds(100, "", "")
+  guilds, err := client.UserGuilds(100, "", "")
 
   if err != nil {
     logger.Fatalf("Error loading guilds: %s", err.Error())
@@ -76,6 +75,23 @@ func onReady(session *discordgo.Session, event *discordgo.Ready) {
       logger.Infof("Found existing session on startup: %s", guild.ID)
       // todo guild is session => load or delete
     }
+  }
+
+  // check if CLI has already requested a session
+  if options.ServerName != "" {
+    logger.Info("Using CLI session info.")
+    var user *discordgo.User
+    user = &discordgo.User{
+      ID: options.UserID,
+      Bot: false,
+    }
+    // Not sure if this is a good work-around, but it works....
+    userpointer := *user
+    session, err := session.Create(client, options.ServerName, &userpointer)
+    if err != nil {
+      // todo: error handling
+    }
+    sessions = append(sessions, session)
   }
 
 }
