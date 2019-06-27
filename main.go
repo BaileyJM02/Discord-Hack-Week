@@ -10,10 +10,11 @@ import (
   "os/signal"
   "strings"
   "syscall"
+  "fmt"
 )
 
 var token string
-var options map[string]interface{}
+var options cli.Options
 var err error
 var sessions []*session.Session
 
@@ -24,17 +25,18 @@ func init() {
   // If no flags are given, run CLI
   if token == "NOTOKEN" {
     options, err = cli.Start()
+  } else {
+    options = cli.Options{Token: token}
   }
-
-
 }
 
 func main() {
   logger := util.GetSugaredLogger()
   defer logger.Sync() // flushes buffer, if any
 
-  if token == "" {
-    logger.Fatal("No token provided. Please use -t <bot token>")
+  // Catches any errors recorded on init and fails.
+  if err != nil {
+      logger.Fatal(fmt.Sprintf(`Unable to start due to multiple errors: %v`, err))
   }
 
   logger.Info("Starting bot.")

@@ -8,9 +8,17 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-func Start() (map[string]interface{}, error) {
+// Options struct for server creation
+type Options struct {
+	Token string
+	ServerName string
+	ServerType string
+}
+
+// Start function to start CLI
+func Start() (Options, error) {
 	// make options map
-	options := make(map[string]interface{})
+	options := make(map[string]string)
 
 	// define all validations
 	validateToken := func(input string) error {
@@ -41,7 +49,7 @@ func Start() (map[string]interface{}, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return options, err
+		return Options{}, err
 	}
 
 	// pass the result to the map
@@ -67,7 +75,7 @@ func Start() (map[string]interface{}, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return options, err
+		return Options{}, err
 	}
 
 	// pass the result to the map
@@ -83,7 +91,7 @@ func Start() (map[string]interface{}, error) {
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return options, err
+		return Options{}, err
 	}
 
 	// pass the result to the map
@@ -91,5 +99,9 @@ func Start() (map[string]interface{}, error) {
 
 
 	// return map with error nil
-	return options, nil
+	return Options{
+		Token: options["token"],
+		ServerName: options["serverName"],
+		ServerType: options["serverType"],
+	}, nil
 }
