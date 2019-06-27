@@ -5,7 +5,8 @@ import(
   "github.com/finione/Discord-Hack-Week/src/cli"
 )
 
-func Create(client *discordgo.Session, name string, user *discordgo.User, cli.Options) (session *Session, error error) {
+// Create guild/session function
+func Create(client *discordgo.Session, name string, user *discordgo.User, options cli.Options) (session *Session, error error) {
   session = &Session{
     Name:name,
     Owner:user,
