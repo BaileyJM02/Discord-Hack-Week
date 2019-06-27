@@ -32,7 +32,7 @@ func Create(client *discordgo.Session, name, userID, returnChannelID string, opt
   // Assign guild to session struct
   session.Guild = guild
 
-  /** TODO: Move to OAuth2 **/
+  /** TODO: Move to OAuth2 (MAYBE) **/
   // err := client.GuildMemberAdd(user.Token, session.Guild.ID, user.ID, "", emptyStringMap, false, false)
 
   // Create the welcome channel
@@ -57,10 +57,21 @@ func Create(client *discordgo.Session, name, userID, returnChannelID string, opt
   // Send welcome message
   client.ChannelMessageSend(channel.ID, fmt.Sprint("**Welcome to your new guild!**\n\nI've since left, but I hope you already feel at home.... feel free to change anything."))
 
-  
+  // Server layouts
+  // TODO: Add Channels depending on type
+  switch options.ServerType {
+    case "Bot & Support": {
+      // welcome, _ := client.GuildChannelCreate(session.Guild.ID, "Welcome", discordgo.ChannelTypeGuildText)
+      // rules, _ := client.GuildChannelCreate(session.Guild.ID, "Rules", discordgo.ChannelTypeGuildText)
+      
+    }
+    case "Support": {}
+    case "Fun": {}
+    case "Project": {}
+    case  "Product / Service": {}
+    default: {}
+  }
 
   
-  // todo: init guild creation scripts
-
   return session, nil
 }
