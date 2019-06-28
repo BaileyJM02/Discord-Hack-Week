@@ -124,7 +124,7 @@ func onMember(client *discordgo.Session, member *discordgo.GuildMemberAdd) {
     // Set the guild owner as user
     _, err := client.GuildEdit(member.GuildID, discordgo.GuildParams{OwnerID: member.User.ID})
     if err != nil {
-      logger.Errorf("Error on transfering guild (%v): %v",member.GuildID, err)
+      logger.Errorf("Error on transferring guild (%v): %v",member.GuildID, err)
     }
     // Get the bot to leave the guild
     err = client.GuildLeave(member.GuildID)
