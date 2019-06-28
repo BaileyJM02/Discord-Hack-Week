@@ -3,8 +3,13 @@ package session
 import (
   "github.com/bwmarrin/discordgo"
   "github.com/finione/Discord-Hack-Week/src/util"
+  "go.uber.org/goleak"
   "testing"
 )
+
+func TestMain(m *testing.M) {
+  goleak.VerifyTestMain(m)
+}
 
 func TestCreate(t *testing.T) {
 
@@ -14,7 +19,7 @@ func TestCreate(t *testing.T) {
     return
   }
 
-  _, err  := Create(client, "test", nil)
+  _, err  := Create(client, "test", "", "", nil)
   if err != nil {
     t.Fail()
   }
